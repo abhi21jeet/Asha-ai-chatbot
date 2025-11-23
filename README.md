@@ -64,8 +64,8 @@ It uses **LangChain** to manage retrieval and generation, **Pinecone** for stori
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/rag-chatbot.git
-cd rag-chatbot
+git clone https://github.com/your-username/Asha-ai-chatbot.git
+cd Asha-ai-chatbot
 ```
 
 ### 2. Create Virtual Environment
