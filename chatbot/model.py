@@ -45,10 +45,10 @@ if "GROQ_API_KEY" not in os.environ:
 def load_groq():
     # Load environment variables from .env file
     llm = ChatGroq(
-        model="deepseek-r1-distill-llama-70b",
+        model="llama-3.1-8b-instant",
         temperature=0,
         max_tokens=None,
-        reasoning_format="parsed",
+        # reasoning_format="parsed",
         timeout=None,
         max_retries=2,
     )

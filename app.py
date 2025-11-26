@@ -10,12 +10,18 @@ from chatbot.util import download_nltk
 from chatbot.retrieval import retrieve_context
 from chatbot.prompt import build_prompt_template
 from huggingface_hub import login
-from langchain.chains import RetrievalQA
+# from langchain.chains.retrieval_qa.base import RetrievalQA
+
 from streamlit_lottie import st_lottie
 import requests
 import re
 import time
-from langchain.schema import BaseMessage
+from langchain_core.messages import HumanMessage, AIMessage, SystemMessage, BaseMessage
+from langchain_core.documents import Document
+
+# from langchain.chains import create_retrieval_chain
+# from langchain.chains.combine_documents import create_stuff_documents_chain
+# from langchain_core.prompts import ChatPromptTemplate
 
 os.environ["PYTORCH_JIT"] = "0"  # Avoids internal torch class issues
 os.environ["STREAMLIT_WATCH_DIRECTORIES"] = (
@@ -213,20 +219,48 @@ def apply_custom_css():
     )
 
 
+# def build_rag_pipeline(llm, retriever):
+#     """Build RAG pipeline with error handling"""
+#     try:
+#         qa_chain = RetrievalQA.from_chain_type(
+#             llm=llm,
+#             retriever=retriever,
+#             return_source_documents=True,
+#             chain_type="stuff",
+#         )
+#         return qa_chain
+#     except Exception as e:
+#         st.error(f"Error building RAG pipeline: {e}")
+#         return None
+
 def build_rag_pipeline(llm, retriever):
-    """Build RAG pipeline with error handling"""
+    """Build RAG pipeline with error handling using modern LangChain modules"""
     try:
-        qa_chain = RetrievalQA.from_chain_type(
-            llm=llm,
-            retriever=retriever,
-            return_source_documents=True,
-            chain_type="stuff",
+           
+        # Create the prompt template
+        system_prompt = (
+            "Use the given context to answer the question. "
+            "If you don't know the answer, say you don't know. "
+            "Use three sentences maximum and keep the answer concise.\n\n"
+            "Context: {context}"
         )
-        return qa_chain
+        
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", system_prompt),
+            ("human", "{input}"),
+        ])
+        
+        # Create the document combination chain
+        question_answer_chain = create_stuff_documents_chain(llm, prompt)
+        
+        # Create the retrieval chain
+        rag_chain = create_retrieval_chain(retriever, question_answer_chain)
+        
+        return rag_chain
+        
     except Exception as e:
         st.error(f"Error building RAG pipeline: {e}")
         return None
-
 
 def clean_response(response):
     """Clean and format the response"""
